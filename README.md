@@ -18,7 +18,7 @@ A dynamic, terminal-styled developer portfolio inspired by VS Code. It automatic
 
 This portfolio parses specific HTML comments in your repository's README to control how the project is displayed:
 
-*   `<!-- [HIDDEN] -->`: Hides the repository from the portfolio.
+*   `<!-- [   HIDDEN  ] -->`: Hides the repository from the portfolio.
 *   `<!-- [LANG:Angular, Node.js] -->`: Overrides the GitHub detected language, allowing multiple custom categories separated by commas.
 *   `<!-- [DEMO_READY URL="https://..."] -->`: Adds a "RUN DEMO" button. If URL is omitted, it routes internally.
 *   `<!-- EN -->` / `<!-- ES -->`: Creates interactive language tabs to switch the README text dynamically without reloading.
@@ -40,7 +40,7 @@ Un portfolio de desarrollador dinámico con estilo de terminal, inspirado en VS 
 
 Este portfolio lee comentarios HTML específicos en el README de tu repositorio para controlar cómo se muestra el proyecto:
 
-*   `<!-- [HIDDEN] -->`: Oculta el repositorio del portfolio.
+*   `<!-- [   HIDDEN   ] -->`: Oculta el repositorio del portfolio.
 *   `<!-- [LANG:Angular, Node.js] -->`: Sobreescribe el lenguaje detectado por GitHub, permitiendo múltiples categorías separadas por comas.
 *   `<!-- [DEMO_READY URL="https://..."] -->`: Agrega un botón "RUN DEMO". Si se omite la URL, rutea internamente.
 *   `<!-- EN -->` / `<!-- ES -->`: Crea pestañas interactivas de idiomas para cambiar el texto del README dinámicamente sin recargar la página.
