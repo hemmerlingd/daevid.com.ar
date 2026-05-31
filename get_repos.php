@@ -63,9 +63,10 @@ if (curl_errno($ch)) {
 $repos = json_decode($response, true);
 curl_close($ch);
 
-if (!is_array($repos)) {
+if (!is_array($repos) || isset($repos['message'])) {
     http_response_code(500);
-    echo json_encode(["error" => "Invalid response from GitHub API"]);
+    $errMsg = isset($repos['message']) ? $repos['message'] : "Invalid response from GitHub API";
+    echo json_encode(["error" => $errMsg]);
     exit;
 }
 

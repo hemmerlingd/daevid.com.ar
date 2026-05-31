@@ -78,41 +78,20 @@ body {
     color: #8b949e;
 }
 
-.file-list li.file-item span {
-    position: relative;
-    padding-left: 24px;
-    display: inline-block;
-    width: 100%;
+.file-list li.file-item, .file-list li.folder-child {
+    display: flex;
+    align-items: center;
 }
 
-.file-list li.file-item span::before {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    text-align: center;
-    line-height: 16px;
+.file-list li.file-item span.file-name-span {
+    padding-left: 0;
+    width: auto;
+}
+
+.folder-icon, .folder-icon-static {
+    margin-right: 8px;
     font-size: 14px;
 }
-
-.icon-env::before { content: '⚙'; font-size: 14px; color: #8b949e; }
-.icon-php::before { content: 'PH'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #8892bf; }
-.icon-html::before { content: '< >'; font-size: 10px !important; font-weight: bold; color: #e34f26; letter-spacing: -1px; }
-.icon-js::before { content: 'JS'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #f7df1e; }
-.icon-css::before { content: '#'; font-weight: bold; color: #1572b6; }
-.icon-repo::before { content: '{}'; font-weight: bold; color: #8b949e; }
-
-/* Lenguajes de GitHub */
-.icon-typescript::before { content: 'TS'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #3178c6; }
-.icon-javascript::before { content: 'JS'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #f7df1e; }
-.icon-python::before { content: 'PY'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #3572A5; }
-.icon-csharp::before { content: 'C#'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #178600; }
-.icon-java::before { content: 'JV'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #b07219; }
-.icon-angular::before { content: 'NG'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #dd0031; }
-.icon-nodejs::before { content: 'NJ'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #68a063; }
-.icon-wordpress::before { content: 'WP'; font-size: 11px !important; font-weight: bold; font-family: sans-serif; color: #21759b; }
 
 .file-list li:hover:not(.disabled), .file-list li.active {
     background: #21262d;
@@ -586,4 +565,89 @@ body {
 
 .folder-content .folder-child {
     padding-left: 38px;
+}
+
+/* Landing Page Overlay */
+.intro-landing {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: radial-gradient(circle at center, #161b22 0%, var(--bg-color) 100%);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.intro-landing.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.05);
+}
+
+.landing-content {
+    text-align: center;
+    z-index: 2;
+}
+
+.glitch-title {
+    font-size: 3.5rem;
+    color: white;
+    margin-bottom: 10px;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.landing-subtitle {
+    font-size: 1.2rem;
+    color: var(--comment);
+    margin-bottom: 40px;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 1px;
+}
+
+.landing-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-landing {
+    padding: 15px 30px;
+    font-size: 1rem;
+    font-family: 'Fira Code', monospace;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.btn-comercial {
+    background: transparent;
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+}
+
+.btn-comercial:hover {
+    background: var(--neon-blue);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(0, 122, 204, 0.4);
+}
+
+.btn-tecnico {
+    background: transparent;
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+}
+
+.btn-tecnico:hover {
+    background: var(--neon-green);
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
 }

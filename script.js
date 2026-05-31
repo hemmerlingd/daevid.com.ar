@@ -2,6 +2,7 @@ const GITHUB_USER = 'hemmerlingd';
 let initialCodeContent = '';
 
 document.addEventListener('DOMContentLoaded', () => {
+
     // Store original content
     const codeTextContainer = document.querySelector('.code-text');
     initialCodeContent = codeTextContainer.innerHTML;
@@ -67,86 +68,154 @@ async function fetchGithubProjects() {
         clearInterval(loadingInterval);
         loadingContainer.remove();
 
-        if (!response.ok) throw new Error('Error fetching repositories');
-        const repos = await response.json();
+        let githubRepos = [];
+        try {
+            const response = await fetch(`../get_repos.php?action=repos`);
+            if (!response.ok) throw new Error('Error fetching GitHub repositories');
+            githubRepos = await response.json();
 
-        // Fetch READMEs en paralelo para detectar flag <!-- [LANG:xxx] -->
-        await Promise.all(repos.map(async (repo) => {
-            try {
-                const readmeResp = await fetch(`get_repos.php?action=readme&repo=${repo.name}`);
-                if (readmeResp.ok) {
-                    const readmeText = await readmeResp.text();
-                    const langMatch = readmeText.match(/<!--\s*\[LANG:(.*?)\]\s*-->/i);
-                    if (langMatch) {
-                        repo.language = langMatch[1].trim();
+            // Fetch READMEs en paralelo para GitHub repos
+            await Promise.all(githubRepos.map(async (repo) => {
+                try {
+                    const readmeResp = await fetch(`../get_repos.php?action=readme&repo=${repo.name}`);
+                    if (readmeResp.ok) {
+                        const readmeText = await readmeResp.text();
+                        const langMatch = readmeText.match(/<!--\s*\[LANG:(.*?)\]\s*-->/i);
+                        if (langMatch) {
+                            repo.language = langMatch[1].trim();
+                        }
+                        repo._readmeCache = readmeText;
                     }
-                    // Cache del readme para no re-fetchar después
-                    repo._readmeCache = readmeText;
+                } catch (e) {}
+            }));
+
+            // Add GITHUB PROJECTS HEADER if we have repos
+            if (githubRepos.length > 0) {
+                const githubHeader = document.createElement('li');
+                githubHeader.style.marginTop = '15px';
+                githubHeader.style.marginBottom = '5px';
+                githubHeader.style.fontSize = '11px';
+                githubHeader.style.color = 'var(--comment)';
+                githubHeader.style.textTransform = 'uppercase';
+                githubHeader.style.pointerEvents = 'none';
+                githubHeader.style.paddingLeft = '20px';
+                githubHeader.textContent = 'GITHUB PROJECTS';
+                fileList.appendChild(githubHeader);
+                
+                renderRepoGroups(githubRepos, fileList);
+            }
+        } catch (e) {
+            console.error('Failed to load GitHub projects:', e);
+            const errorLi = document.createElement('li');
+            errorLi.className = 'file-item disabled';
+            errorLi.innerHTML = `<span style="color: #ff5f56; padding-left: 24px;">> Error API GitHub</span>`;
+            fileList.appendChild(errorLi);
+        }
+
+        // Fetch custom projects
+        let customRepos = [];
+        try {
+            const customResp = await fetch('../custom_projects.json');
+            if (customResp.ok) {
+                customRepos = await customResp.json();
+            }
+        } catch (e) {
+            console.error('Failed to load custom projects', e);
+        }
+
+        if (customRepos.length > 0) {
+            await Promise.all(customRepos.map(async (repo) => {
+                repo.is_custom = true; // Inyectamos flag para distinguirlos
+                if (repo.readme_path) {
+                    try {
+                        const readmeResp = await fetch(`../${repo.readme_path}`);
+                        if (readmeResp.ok) {
+                            const readmeText = await readmeResp.text();
+                            const langMatch = readmeText.match(/<!--\s*\[LANG:(.*?)\]\s*-->/i);
+                            if (langMatch) {
+                                repo.language = langMatch[1].trim();
+                            }
+                            repo._readmeCache = readmeText;
+                        }
+                    } catch (e) {}
                 }
-            } catch (e) { /* silenciar errores individuales */ }
-        }));
+            }));
 
-        // Agrupar repos por lenguaje
-        const grouped = {};
-        repos.forEach(repo => {
-            const langs = repo.language ? repo.language.split(',').map(l => l.trim()) : ['Other'];
-            langs.forEach(lang => {
-                if (!grouped[lang]) grouped[lang] = [];
-                grouped[lang].push(repo);
-            });
-        });
+            const customHeader = document.createElement('li');
+            customHeader.style.marginTop = '15px';
+            customHeader.style.marginBottom = '5px';
+            customHeader.style.fontSize = '11px';
+            customHeader.style.color = 'var(--comment)';
+            customHeader.style.textTransform = 'uppercase';
+            customHeader.style.pointerEvents = 'none';
+            customHeader.style.paddingLeft = '20px';
+            customHeader.textContent = 'CUSTOM PROJECTS';
+            fileList.appendChild(customHeader);
 
-        // Orden de prioridad para las carpetas
-        const langOrder = ['Angular', 'Node.js', 'PHP', 'WP Plugins', 'JavaScript', 'HTML', 'CSS', 'TypeScript', 'Python', 'C#', 'Java'];
-        const sortedLangs = Object.keys(grouped).sort((a, b) => {
-            const ia = langOrder.indexOf(a);
-            const ib = langOrder.indexOf(b);
-            if (ia === -1 && ib === -1) return a.localeCompare(b);
-            if (ia === -1) return 1;
-            if (ib === -1) return -1;
-            return ia - ib;
-        });
-
-        sortedLangs.forEach(lang => {
-            // Crear carpeta
-            const folder = document.createElement('li');
-            folder.className = 'folder-item';
-            
-            const folderIcon = lang === 'Other' ? '📁' : getFolderIcon(lang);
-            folder.innerHTML = `<span class="folder-label"><span class="folder-icon">${folderIcon}</span>${lang} <span class="folder-count">(${grouped[lang].length})</span></span><span class="folder-arrow">▶</span>`;
-            
-            // Contenedor de archivos dentro de la carpeta
-            const folderContent = document.createElement('ul');
-            folderContent.className = 'folder-content';
-            folderContent.style.display = 'none';
-
-            grouped[lang].forEach(repo => {
-                const li = document.createElement('li');
-                li.className = 'file-item folder-child';
-                
-                const span = document.createElement('span');
-                span.textContent = repo.name;
-                span.className = getIconClass(repo.language);
-                
-                li.appendChild(span);
-                li.addEventListener('click', () => loadRepoReadme(repo, li));
-                folderContent.appendChild(li);
-            });
-
-            // Toggle carpeta
-            folder.addEventListener('click', () => {
-                const isOpen = folderContent.style.display !== 'none';
-                folderContent.style.display = isOpen ? 'none' : 'block';
-                folder.classList.toggle('open', !isOpen);
-                folder.querySelector('.folder-arrow').textContent = isOpen ? '▶' : '▼';
-            });
-
-            fileList.appendChild(folder);
-            fileList.appendChild(folderContent);
-        });
+            renderRepoGroups(customRepos, fileList);
+        }
     } catch (error) {
-        console.error('Failed to load GitHub projects:', error);
+        console.error('Critical error in fetchGithubProjects:', error);
     }
+}
+
+function renderRepoGroups(repos, fileList) {
+    // Agrupar repos por lenguaje
+    const grouped = {};
+    repos.forEach(repo => {
+        const langs = repo.language ? repo.language.split(',').map(l => l.trim()) : ['Other'];
+        langs.forEach(lang => {
+            if (!grouped[lang]) grouped[lang] = [];
+            grouped[lang].push(repo);
+        });
+    });
+
+    // Orden de prioridad para las carpetas
+    const langOrder = ['Angular', 'Node.js', 'PHP', 'WP Plugins', 'WP', 'JavaScript', 'HTML', 'CSS', 'TypeScript', 'Python', 'C#', 'Java'];
+    const sortedLangs = Object.keys(grouped).sort((a, b) => {
+        const ia = langOrder.indexOf(a);
+        const ib = langOrder.indexOf(b);
+        if (ia === -1 && ib === -1) return a.localeCompare(b);
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+    });
+
+    sortedLangs.forEach(lang => {
+        // Crear carpeta
+        const folder = document.createElement('li');
+        folder.className = 'folder-item';
+        
+        const folderIcon = lang === 'Other' ? '📁' : getFolderIcon(lang);
+        folder.innerHTML = `<span class="folder-label"><span class="folder-icon">${folderIcon}</span>${lang} <span class="folder-count">(${grouped[lang].length})</span></span><span class="folder-arrow">▶</span>`;
+        
+        // Contenedor de archivos dentro de la carpeta
+        const folderContent = document.createElement('ul');
+        folderContent.className = 'folder-content';
+        folderContent.style.display = 'none';
+
+        grouped[lang].forEach(repo => {
+            const li = document.createElement('li');
+            li.className = 'file-item folder-child';
+            
+            const iconHtml = getDeviconForLanguage(lang);
+            
+            li.innerHTML = `${iconHtml} <span class="file-name-span">${repo.name}</span>`;
+            li.addEventListener('click', () => loadRepoReadme(repo, li));
+            folderContent.appendChild(li);
+        });
+
+        // Toggle carpeta
+        folder.addEventListener('click', () => {
+            const isOpen = folderContent.style.display !== 'none';
+            folderContent.style.display = isOpen ? 'none' : 'block';
+            folder.classList.toggle('open', !isOpen);
+            folder.querySelector('.folder-arrow').textContent = isOpen ? '▶' : '▼';
+        });
+
+        fileList.appendChild(folder);
+        fileList.appendChild(folderContent);
+    });
 }
 
 async function loadRepoReadme(repo, element) {
@@ -154,7 +223,7 @@ async function loadRepoReadme(repo, element) {
     element.classList.add('active');
     
     const tab = document.querySelector('.tab.active');
-    tab.textContent = repo.name;
+    tab.innerHTML = `${getDeviconForLanguage(repo.language)} ${repo.name}`;
     
     const codeTextContainer = document.querySelector('.code-text');
     codeTextContainer.innerHTML = '';
@@ -183,15 +252,27 @@ async function loadRepoReadme(repo, element) {
         let is404 = false;
 
         if (!markdownText) {
-            // Use the local PHP proxy to get the readme in raw format
-            const response = await fetch(`get_repos.php?action=readme&repo=${repo.name}`);
-            if (response.status === 404) {
-                is404 = true;
-            } else if (!response.ok) {
-                throw new Error('Error fetching README');
+            if (repo.readme_path) {
+                const response = await fetch(`../${repo.readme_path}`);
+                if (response.status === 404) {
+                    is404 = true;
+                } else if (!response.ok) {
+                    throw new Error('Error fetching local README');
+                } else {
+                    markdownText = await response.text();
+                    repo._readmeCache = markdownText;
+                }
             } else {
-                markdownText = await response.text();
-                repo._readmeCache = markdownText;
+                // Use the local PHP proxy to get the readme in raw format
+                const response = await fetch(`../get_repos.php?action=readme&repo=${repo.name}`);
+                if (response.status === 404) {
+                    is404 = true;
+                } else if (!response.ok) {
+                    throw new Error('Error fetching README');
+                } else {
+                    markdownText = await response.text();
+                    repo._readmeCache = markdownText;
+                }
             }
         }
         
@@ -237,7 +318,7 @@ async function loadRepoReadme(repo, element) {
             `;
         }
 
-        if (!repo.private) {
+        if (!repo.private && !repo.is_custom) {
             topHeaderHTML += `
                 <a href="${repo.html_url}" target="_blank" class="btn-source">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
@@ -464,41 +545,50 @@ function parseMarkdownLanguages(markdown) {
 
 function getFolderIcon(lang) {
     const icons = {
-        'Angular': '<span style="color: #dd0031; font-weight: bold; font-family: sans-serif; font-size: 11px;">NG</span>',
-        'Node.js': '<span style="color: #68a063; font-weight: bold; font-family: sans-serif; font-size: 11px;">NJ</span>',
-        'PHP': '<span style="color: #8892bf; font-weight: bold; font-family: sans-serif; font-size: 11px;">PH</span>',
-        'WP Plugins': '<span style="color: #21759b; font-weight: bold; font-family: sans-serif; font-size: 11px;">WP</span>',
-        'JavaScript': '<span style="color: #f7df1e; font-weight: bold; font-family: sans-serif; font-size: 11px;">JS</span>',
-        'HTML': '<span style="color: #e34f26; font-weight: bold; font-size: 10px; letter-spacing: -1px;">&lt; &gt;</span>',
-        'CSS': '<span style="color: #1572b6; font-weight: bold;">#</span>',
-        'TypeScript': '<span style="color: #3178c6; font-weight: bold; font-family: sans-serif; font-size: 11px;">TS</span>',
-        'Python': '<span style="color: #3572A5; font-weight: bold; font-family: sans-serif; font-size: 11px;">PY</span>',
-        'C#': '<span style="color: #178600; font-weight: bold; font-family: sans-serif; font-size: 11px;">C#</span>',
-        'Java': '<span style="color: #b07219; font-weight: bold; font-family: sans-serif; font-size: 11px;">JV</span>',
-        'C++': '<span style="color: #f34b7d; font-weight: bold; font-family: sans-serif; font-size: 11px;">C+</span>',
-        'Ruby': '<span style="color: #701516; font-weight: bold; font-family: sans-serif; font-size: 11px;">RB</span>',
-        'Go': '<span style="color: #00ADD8; font-weight: bold; font-family: sans-serif; font-size: 11px;">GO</span>',
-        'Rust': '<span style="color: #dea584; font-weight: bold; font-family: sans-serif; font-size: 11px;">RS</span>',
-        'Dart': '<span style="color: #00B4AB; font-weight: bold; font-family: sans-serif; font-size: 11px;">DT</span>'
+        'Angular': '<i class="devicon-angular-plain colored folder-icon"></i>',
+        'Node.js': '<i class="devicon-nodejs-plain colored folder-icon"></i>',
+        'PHP': '<i class="devicon-php-plain colored folder-icon"></i>',
+        'WP Plugins': '<i class="devicon-wordpress-plain colored folder-icon"></i>',
+        'WP': '<i class="devicon-wordpress-plain colored folder-icon"></i>',
+        'JavaScript': '<i class="devicon-javascript-plain colored folder-icon"></i>',
+        'HTML': '<i class="devicon-html5-plain colored folder-icon"></i>',
+        'CSS': '<i class="devicon-css3-plain colored folder-icon"></i>',
+        'TypeScript': '<i class="devicon-typescript-plain colored folder-icon"></i>',
+        'Python': '<i class="devicon-python-plain colored folder-icon"></i>',
+        'C#': '<i class="devicon-csharp-plain colored folder-icon"></i>',
+        'Java': '<i class="devicon-java-plain colored folder-icon"></i>',
+        'C++': '<i class="devicon-cplusplus-plain colored folder-icon"></i>',
+        'Ruby': '<i class="devicon-ruby-plain colored folder-icon"></i>',
+        'Go': '<i class="devicon-go-plain colored folder-icon"></i>',
+        'Rust': '<i class="devicon-rust-plain colored folder-icon"></i>',
+        'Dart': '<i class="devicon-dart-plain colored folder-icon"></i>'
     };
-    return icons[lang] || '<span style="color: #8b949e; font-weight: bold;">{}</span>';
+    return icons[lang] || '<span class="folder-icon" style="color: #8b949e;">📁</span>';
 }
 
-function getIconClass(language) {
-    if (!language) return 'icon-repo';
-    const langLower = language.toLowerCase();
+function getDeviconForLanguage(language) {
+    if (!language) return '<i class="devicon-git-plain" style="color: #8b949e; margin-right: 8px; font-size: 14px;"></i>';
+    
+    // Si hay multiples lenguajes (ej: Angular, PHP), tomamos el primero para el ícono principal
+    const primaryLang = language.split(',')[0].trim().toLowerCase();
+    
     const map = {
-        'angular': 'icon-angular',
-        'node.js': 'icon-nodejs',
-        'wp plugins': 'icon-wordpress',
-        'typescript': 'icon-typescript',
-        'javascript': 'icon-javascript',
-        'php': 'icon-php',
-        'html': 'icon-html',
-        'css': 'icon-css',
-        'python': 'icon-python',
-        'c#': 'icon-csharp',
-        'java': 'icon-java'
+        'angular': 'devicon-angular-plain colored',
+        'node.js': 'devicon-nodejs-plain colored',
+        'wp plugins': 'devicon-wordpress-plain colored',
+        'wp': 'devicon-wordpress-plain colored',
+        'typescript': 'devicon-typescript-plain colored',
+        'javascript': 'devicon-javascript-plain colored',
+        'php': 'devicon-php-plain colored',
+        'html': 'devicon-html5-plain colored',
+        'css': 'devicon-css3-plain colored',
+        'python': 'devicon-python-plain colored',
+        'c#': 'devicon-csharp-plain colored',
+        'java': 'devicon-java-plain colored'
     };
-    return map[langLower] || 'icon-repo';
+    
+    const className = map[primaryLang] || 'devicon-git-plain';
+    const extraStyle = !map[primaryLang] ? 'style="color: #8b949e; margin-right: 8px; font-size: 14px;"' : 'style="margin-right: 8px; font-size: 14px;"';
+    
+    return `<i class="${className}" ${extraStyle}></i>`;
 }
