@@ -1,69 +1,141 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#00ff41" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <title>Daevid.com.ar | Perfil Técnico</title>
-    <link rel="stylesheet" href="../style.css?v=3">
+    <link rel="stylesheet" href="../style.css?v=3" />
+    <link rel="stylesheet" href="index.css" />
     <!-- Fuente Monospace tipo VS Code -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&display=swap"
+      rel="stylesheet" />
     <!-- Marked.js para parsear Markdown a HTML -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Devicon para iconos oficiales -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
-</head>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+    <style>
+      .btn-sidebar-toggle {
+        display: none;
+        position: fixed;
+        top: 10px;
+        right: 15px; /* Movido a la derecha para no tapar el breadcrumb del tab */
+        z-index: 1100;
+        background: var(--sidebar-bg);
+        color: var(--neon-green);
+        border: 1px solid var(--neon-green);
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: "Fira Code", monospace;
+      }
 
-<body class="vscode-theme">
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 999;
+      }
+
+      @media (max-width: 768px) {
+        .btn-sidebar-toggle {
+          display: block;
+        }
+        body.sidebar-active .sidebar-overlay {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="vscode-theme">
     <div class="scanlines"></div>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
     <main class="app-container">
-        <!-- Sidebar: Explorador de Proyectos -->
-        <aside class="sidebar">
-            <!-- Botón hacia perfil comercial -->
-            <li style="margin-top: 15px; margin-bottom: 5px; text-align: center; ">
-                <a href="../comercial/" class="btn-source" style="margin-bottom: 20px;">
-                    [Switch to Commercial]
-                </a>
-            </li>
-            <div class="sidebar-header">EXPLORER</div>
-            <ul class="file-list" id="sidebar-file-list">
-                <li class="file-item active"><i class="devicon-html5-plain colored folder-icon-static"></i> <span class="file-name-span">index.html</span></li>
-                <li class="file-item disabled"><i class="devicon-php-plain colored folder-icon-static"></i> <span class="file-name-span">get_repos.php</span></li>
-                <li class="file-item disabled"><i class="devicon-css3-plain colored folder-icon-static"></i> <span class="file-name-span">style.css</span></li>
-                <li class="file-item disabled"><i class="devicon-javascript-plain colored folder-icon-static"></i> <span class="file-name-span">script.js</span></li>
-                <li class="file-item disabled"><span style="color:#8b949e; margin-right: 8px; font-size: 14px;">⚙</span> <span class="file-name-span">.env</span></li>
-                
+      <!-- Botón toggle sidebar para móvil -->
+      <button id="sidebar-toggle" class="btn-sidebar-toggle">MENU ☰</button>
+      <!-- Sidebar: Explorador de Proyectos -->
+      <aside class="sidebar">
+        <!-- Botón hacia perfil comercial -->
+        <li class="sidebar-btn-container">
+          <a href="../comercial/" class="btn-source">
+            [Switch to Commercial]
+          </a>
+        </li>
+        <li class="sidebar-btn-container">
+          <a
+            href="https://wa.me/543512019942?text=Hola,%20vengo%20de%20tu%20web%20y%20necesito%20asesoramiento."
+            target="_blank"
+            class="btn-source">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
+            </svg>
+            [ Contactame ]
+          </a>
+        </li>
+        <div class="sidebar-header">EXPLORER</div>
+        <ul class="file-list" id="sidebar-file-list">
+          <li class="file-item active">
+            <i class="devicon-html5-plain colored folder-icon-static"></i>
+            <span class="file-name-span">index.html</span>
+          </li>
+          <li class="file-item disabled">
+            <i class="devicon-php-plain colored folder-icon-static"></i>
+            <span class="file-name-span">get_repos.php</span>
+          </li>
+          <li class="file-item disabled">
+            <i class="devicon-css3-plain colored folder-icon-static"></i>
+            <span class="file-name-span">style.css</span>
+          </li>
+          <li class="file-item disabled">
+            <i class="devicon-javascript-plain colored folder-icon-static"></i>
+            <span class="file-name-span">script.js</span>
+          </li>
+          <li class="file-item disabled">
+            <span class="env-icon">⚙</span>
+            <span class="file-name-span">.env</span>
+          </li>
 
-                <!-- GITHUB PROJECTS HEADER -->
-                <li style="margin-top: 15px; margin-bottom: 5px; font-size: 11px; color: var(--comment); text-transform: uppercase; pointer-events: none; padding-left: 20px;">
-                    GITHUB PROJECTS
-                </li>
-                <!-- Loading indicator -->
-                <li class="file-item" id="github-loading" style="pointer-events: none;">
-                    <span style="color: var(--neon-green); font-family: 'Fira Code', monospace; padding-left: 24px;">> fetching_api...</span>
-                </li>
-            </ul>
-        </aside>
+          <!-- GITHUB PROJECTS HEADER -->
+          <li class="sidebar-section-header">GITHUB PROJECTS</li>
+          <!-- Loading indicator -->
+          <li class="file-item" id="github-loading">
+            <span class="loading-text">> fetching_api...</span>
+          </li>
+        </ul>
+      </aside>
 
-        <!-- Editor Central -->
-        <section class="editor">
-            <div class="tabs">
-                <div class="tab active">index.html</div>
-            </div>
+      <!-- Editor Central -->
+      <section class="editor">
+        <div class="tabs">
+          <div class="tab active">index.html</div>
+        </div>
 
-            <div class="code-content">
-                <div class="line-numbers">
-                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
-                </div>
-                <div class="code-text">
-                    <section class="portfolio-profile">
-                        <!-- Encabezado del Perfil -->
-                        <div class="profile-header">
-                            <h2 class="neon-text-green">&lt;Profile &amp; Core Skills /&gt;</h2>
-                            <div class="code-block javascript-block">
-                                <pre><code><span class="keyword">const</span> developer = {
+        <div class="code-content">
+          <div class="line-numbers">
+            <span>1</span><span>2</span><span>3</span><span>4</span
+            ><span>5</span>
+          </div>
+          <div class="code-text">
+            <section class="portfolio-profile">
+              <!-- Encabezado del Perfil -->
+              <div class="profile-header">
+                <h2 class="neon-text-green">
+                  &lt;Profile &amp; Core Skills /&gt;
+                </h2>
+                <div class="code-block javascript-block">
+                  <pre><code><span class="keyword">const</span> developer = {
     name: <span class="string">"David Hemmerling"</span>,
     role: <span class="string">"Full Stack Developer &amp; Systems Analyst"</span>,    <span class="comment">// Desarrollador Full Stack y Analista de Sistemas</span>
     degree: <span class="string">"Analista Programador"</span>,    <span class="comment">// Título obtenido</span>
@@ -72,21 +144,33 @@
     learningStyle: <span class="string">"Self-taught &amp; Adaptable"</span>,    <span class="comment">// Autodidacta y Adaptable</span>
     philosophy: <span class="string">"DIY - If it doesn't exist, build it"</span>    <span class="comment">// Si no existe, constrúyelo</span>
 };</code></pre>
-                            </div>
-                        </div>
+                </div>
+              </div>
 
-                        <hr class="terminal-hr">
+              <hr class="terminal-hr" />
 
-                        <!-- Implementaciones por Lenguaje -->
-                        <div class="skills-stack">
-                            <h3 class="stack-title neon-text-green">// Core Stack &amp; Language Implementations <span style="opacity: 0.5;">// Stack Principal e Implementaciones</span></h3>
-                            <p class="stack-desc">A continuación, una muestra de las tecnologías que manejo traducidas a funciones reales que representan mi flujo de trabajo diario:</p>
+              <!-- Implementaciones por Lenguaje -->
+              <div class="skills-stack">
+                <h3 class="stack-title neon-text-green">
+                  // Core Stack &amp; Language Implementations
+                  <span class="opacity-50"
+                    >// Stack Principal e Implementaciones</span
+                  >
+                </h3>
+                <p class="stack-desc">
+                  A continuación, una muestra de las tecnologías que manejo
+                  traducidas a funciones reales que representan mi flujo de
+                  trabajo diario:
+                </p>
 
-                            <!-- Node.js / JavaScript -->
-<div class="skill-item">
-    <h4>Backend &amp; Async Logic (Node.js) <span class="comment">// Lógica Backend y Asíncrona</span></h4>
-    <div class="code-block javascript-block">
-        <pre><code><span class="keyword">class</span> SkillSet {    <span class="comment">// Conjunto de Habilidades</span>
+                <!-- Node.js / JavaScript -->
+                <div class="skill-item">
+                  <h4>
+                    Backend &amp; Async Logic (Node.js)
+                    <span class="comment">// Lógica Backend y Asíncrona</span>
+                  </h4>
+                  <div class="code-block javascript-block">
+                    <pre><code><span class="keyword">class</span> SkillSet {    <span class="comment">// Conjunto de Habilidades</span>
     <span class="variable">#strongSuit</span> = [<span class="string">'PHP'</span>, <span class="string">'SQL'</span>, <span class="string">'Node.js'</span>];    <span class="comment">// Puntos fuertes</span>
 
     <span class="function">deployRobustSystem</span>(projectName, requirements) {    <span class="comment">// Desplegar sistema robusto</span>
@@ -102,25 +186,31 @@
         <span class="comment">// Fuertes conocimientos en indexación y estructuración SQL</span>
     }
 }</code></pre>
-    </div>
-</div>
+                  </div>
+                </div>
 
-                            <!-- SQL -->
-                            <div class="skill-item">
-                                <h4>Database Management (SQL) <span class="comment">// Gestión de Bases de Datos</span></h4>
-                                <div class="code-block sql-block">
-                                    <pre><code><span class="keyword">SELECT</span> skill_name, expertise_level    <span class="comment">-- nombre_habilidad, nivel_experiencia</span>
+                <!-- SQL -->
+                <div class="skill-item">
+                  <h4>
+                    Database Management (SQL)
+                    <span class="comment">// Gestión de Bases de Datos</span>
+                  </h4>
+                  <div class="code-block sql-block">
+                    <pre><code><span class="keyword">SELECT</span> skill_name, expertise_level    <span class="comment">-- nombre_habilidad, nivel_experiencia</span>
 <span class="keyword">FROM</span> developer_skills    <span class="comment">-- DE habilidades_desarrollador</span>
 <span class="keyword">WHERE</span> category <span class="keyword">IN</span> (<span class="string">'Backend'</span>, <span class="string">'Databases'</span>)    <span class="comment">-- DONDE categoría EN ('Backend', 'Bases de Datos')</span>
 <span class="keyword">ORDER BY</span> expertise_level <span class="keyword">DESC</span>;    <span class="comment">-- ORDENAR POR nivel_experiencia DESCENDENTE</span></code></pre>
-                                </div>
-                            </div>
+                  </div>
+                </div>
 
-                            <!-- Angular / TS -->
-                            <div class="skill-item">
-                                <h4>Frontend &amp; Async Logic (Angular &amp; JS) <span class="comment">// Lógica Frontend y Asíncrona</span></h4>
-                                <div class="code-block typescript-block">
-                                    <pre><code><span class="keyword">import</span> { Component } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
+                <!-- Angular / TS -->
+                <div class="skill-item">
+                  <h4>
+                    Frontend &amp; Async Logic (Angular &amp; JS)
+                    <span class="comment">// Lógica Frontend y Asíncrona</span>
+                  </h4>
+                  <div class="code-block typescript-block">
+                    <pre><code><span class="keyword">import</span> { Component } <span class="keyword">from</span> <span class="string">'@angular/core'</span>;
 
 @Component({
     selector: <span class="string">'app-frontend-core'</span>,
@@ -133,55 +223,67 @@
         <span class="comment">// Dominio de lógica asíncrona y consumo de APIs</span>
     }
 }</code></pre>
-                                </div>
-                            </div>
-                        </div>
+                  </div>
+                </div>
+              </div>
 
-                        <hr class="terminal-hr">
+              <hr class="terminal-hr" />
 
-                        <!-- Logs de Capacidades Complementarias -->
-                        <div class="complementary-skills">
-                            <h3 class="stack-title">// Complementary Capabilities <span style="opacity: 0.5;">// Capacidades Complementarias</span></h3>
-                            <div class="code-block bash-block">
-                                <pre><code><span class="prompt">$</span> cat diy_projects.log
+              <!-- Logs de Capacidades Complementarias -->
+              <div class="complementary-skills">
+                <h3 class="stack-title">
+                  // Complementary Capabilities
+                  <span style="opacity: 0.5"
+                    >// Capacidades Complementarias</span
+                  >
+                </h3>
+                <div class="code-block bash-block">
+                  <pre><code><span class="prompt">$</span> cat diy_projects.log
 <span class="log-info">> [INFO] Capacidad autodidacta avanzada para resolver desafíos complejos.</span>
 <span class="log-info">> [INFO] Experiencia en la integración de hardware/software (Proyectos DIY y automatización).</span>
 <span class="log-info">> [INFO] Fluidez técnica global (Certificación de inglés nivel C1).</span>
 <span class="log-success">> [SUCCESS] Listo para diseñar, desarrollar y desplegar soluciones de punta a punta.</span></code></pre>
-                            </div>
-                        </div>
-                    </section>
                 </div>
-            </div>
-        </section>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- Modal de Compilación -->
     <div id="modal-terminal" class="modal">
-        <div class="terminal-window">
-            <div class="terminal-header">
-                <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                <span class="terminal-title">powershell.exe</span>
-            </div>
-            <div id="terminal-output" class="terminal-body">
-                <!-- Aquí se inyectan los logs -->
-            </div>
+      <div class="terminal-window">
+        <div class="terminal-header">
+          <span class="dot red"></span><span class="dot yellow"></span
+          ><span class="dot green"></span>
+          <span class="terminal-title">powershell.exe</span>
         </div>
+        <div id="terminal-output" class="terminal-body">
+          <!-- Aquí se inyectan los logs -->
+        </div>
+      </div>
     </div>
 
     <!-- Modal de Galería de Imágenes -->
     <div id="modal-gallery" class="modal">
-        <div class="gallery-close" onclick="closeGallery()">✖</div>
-        <div class="gallery-main">
-            <img id="gallery-main-img" src="" alt="Fullscreen Image">
-        </div>
-        <div class="gallery-thumbnails" id="gallery-thumbnails">
-            <!-- Miniaturas se inyectan aquí -->
-        </div>
+      <div class="gallery-close" onclick="closeGallery()">✖</div>
+      <div class="gallery-main">
+        <img id="gallery-main-img" src="" alt="Fullscreen Image" />
+      </div>
+      <div class="gallery-thumbnails" id="gallery-thumbnails">
+        <!-- Miniaturas se inyectan aquí -->
+      </div>
     </div>
 
     <!-- Script principal de la aplicación -->
     <script src="../script.js?v=3"></script>
-</body>
-
+    <script>
+      document
+        .getElementById("sidebar-toggle")
+        .addEventListener("click", function () {
+          document.body.classList.toggle("sidebar-active");
+        });
+    </script>
+  </body>
 </html>

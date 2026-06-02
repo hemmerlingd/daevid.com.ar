@@ -1,105 +1,146 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#00ff41" />
     <title>Daevid.com.ar | Perfil Comercial</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <!-- Mismos estilos base -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&family=Inter:wght@400;600&display=swap"
+      rel="stylesheet" />
+    <link rel="stylesheet" href="index.css" />
     <style>
-        :root {
-            --bg-color: #0d1117;
-            --neon-green: #00ff41;
-            --neon-blue: #007acc;
-            --text-main: #c9d1d9;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif; /* Usamos Inter para que sea más comercial */
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            background: radial-gradient(circle at center, #161b22 0%, #0d1117 100%);
-        }
-
-        .coming-soon-container {
-            text-align: center;
-            padding: 40px;
-            background: rgba(22, 27, 34, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 255, 65, 0.2);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            max-width: 600px;
-            width: 90%;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            color: #ffffff;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-
-        .highlight {
-            color: var(--neon-green);
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.4);
-        }
-
-        p {
-            font-size: 1.1rem;
-            color: #8b949e;
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-
-        .btn-back {
-            display: inline-block;
-            background: transparent;
-            border: 1px solid var(--neon-green);
-            color: var(--neon-green);
-            padding: 12px 24px;
-            font-size: 1rem;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            font-family: 'Fira Code', monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-back:hover {
-            background: var(--neon-green);
-            color: #000;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
-        }
-        
-        .scanlines {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-            background-size: 100% 4px, 3px 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
+      .btn-whatsapp {
+        border: 1px solid #25d366;
+        color: #25d366;
+        padding: 8px 15px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        transition: 0.3s;
+      }
+      .btn-whatsapp:hover {
+        background: #25d366;
+        color: #000;
+        box-shadow: 0 0 15px #25d366;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="scanlines"></div>
-    <div class="coming-soon-container">
-        <h1>Perfil <span class="highlight">Comercial</span></h1>
-        <p>Estamos construyendo una experiencia adaptada para clientes comerciales y agencias. Por el momento, te invito a explorar mi portfolio técnico completo o contactarme directamente.</p>
-        <a href="../tecnico/" class="btn-back">Volver al Perfil Técnico</a>
-    </div>
-</body>
+    <header>
+      <a href="https://daevid.com.ar" target="_blank" class="desarrollado">
+        <span class="neon-text-green">&lt;Daevid /&gt;</span>
+      </a>
+      <nav>
+        <a href="../" class="btn-back">Inicio</a>
+        <a href="proyectos.html" class="btn-proyects">Ver Proyectos</a>
+        <a href="../tecnico/" class="btn-back">Perfil Técnico</a>
+        <a
+          href="https://wa.me/543512019942?text=Hola,%20vengo%20de%20tu%20web%20y%20necesito%20asesoramiento."
+          target="_blank"
+          class="btn-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
+          </svg>
+          Contactame
+        </a>
+      </nav>
+    </header>
+    <main>
+      <section class="container single-col">
+        <h1>David <span class="highlight">Hemmerling</span></h1>
+        <p>
+          Soy Daevid. Si tuviera que definir mi perfil en pocas palabras, te
+          diría que soy un Analista de Sistemas y
+          <span class="highlight">Desarrollador Full Stack</span> con una fuerte
+          inclinación por resolver problemas reales a través de la tecnología.
+          Me especializo en el desarrollo de sistemas web robustos, uniendo
+          arquitecturas de backend sólidas con interfaces dinámicas y
+          eficientes.
+        </p>
+        <p>
+          A lo largo de mi carrera aprendí que el software es solo una parte de
+          la solución. Mi verdadero fuerte es la capacidad de entender el
+          ecosistema completo de un proyecto: desde la base de datos hasta la
+          experiencia del usuario final.
+        </p>
+      </section>
 
+      <section class="dual-col">
+        <div class="container">
+          <h2>Fuertes <span class="highlight">Técnicos</span></h2>
+          <ul>
+            <li>
+              <div class="highlight">Backend & Datos:</div>
+              Arquitectura e implementación con PHP, Node.js y optimización
+              avanzada de bases de datos SQL.
+            </li>
+            <li>
+              <div class="highlight">Frontend Reactivo:</div>
+              Construcción de aplicaciones modulares y Single Page Applications
+              (SPA) con Angular y JavaScript (ES6+).
+            </li>
+            <li>
+              <div class="highlight">Filosofía DIY (Do It Yourself):</div>
+              Soy autodidacta por naturaleza. Si algo no existe o está roto,
+              investigo y lo armo. Esto me dio una gran habilidad para meter
+              mano no solo en código, sino también en proyectos de hardware,
+              automatización y mantenimiento técnico integral.
+            </li>
+          </ul>
+        </div>
+
+        <div class="container">
+          <h2>Habilidades <span class="highlight">Blandas</span></h2>
+          <ul>
+            <li>
+              <div class="highlight">Resolución Autónoma:</div>
+              No espero a que las soluciones caigan del cielo; investigo, pruebo
+              y resuelvo de punta a punta.
+            </li>
+            <li>
+              <div class="highlight">Comunicación Directa y Concreta:</div>
+              Valoro el tiempo y la claridad. Me enfoco en lo importante para
+              avanzar sin rodeos innecesarios.
+            </li>
+            <li>
+              <div class="highlight">Adaptabilidad Global:</div>
+              Tengo la flexibilidad técnica para saltar de un stack a otro
+              rápidamente y cuento con fluidez global para integrarme o
+              colaborar en proyectos internacionales.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="container single-col">
+        <p>
+          Diseñó sistemas estables, escribo código limpio y disfruto de los
+          desafíos complejos que requieren pensar fuera de la caja (y a veces,
+          ensuciarse las manos).
+        </p>
+      </section>
+      <section class="container single-col">
+        <h2>
+          ¿Querés ver <span class="highlight">ejemplos reales</span> de lo que
+          hago?
+        </h2>
+        <a href="proyectos.html" class="btn-proyects">Ver Proyectos</a>
+      </section>
+    </main>
+
+    <footer>
+      <a href="https://daevid.com.ar" target="_blank" class="desarrollado">
+        <span class="small">desarrollado por:</span><br />
+        <span class="neon-text-green">&lt;Daevid /&gt;</span>
+      </a>
+    </footer>
+  </body>
 </html>

@@ -16,6 +16,10 @@ body {
     color: var(--text-main);
     font-family: 'Fira Code', monospace;
     overflow: hidden;
+    width: 100%;
+    /* Soporte para Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-green) var(--sidebar-bg);
 }
 
 /* Custom Scrollbar - Neon Green */
@@ -30,13 +34,14 @@ body {
 
 ::-webkit-scrollbar-thumb {
     background: var(--neon-green);
-    border-radius: 4px;
-    box-shadow: 0 0 10px var(--neon-green);
+    border-radius: 10px;
+    border: 2px solid var(--sidebar-bg); /* Crea un efecto de separación */
+    box-shadow: 0 0 15px var(--neon-green);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 255, 65, 0.3);
-    box-shadow: none;
+    background: #50ff80;
+    box-shadow: 0 0 20px var(--neon-green);
 }
 
 /* Efecto de monitor antiguo */
@@ -54,6 +59,55 @@ body {
     display: grid;
     grid-template-columns: 240px 1fr;
     height: 100vh;
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        grid-template-columns: 1fr;
+        width: 100vw;
+    }
+
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        width: 260px;
+        z-index: 1000;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    }
+
+    body.sidebar-active .sidebar {
+        left: 0;
+    }
+
+    .code-content { 
+        padding: 10px 5px; /* Reducimos padding lateral para ganar espacio */
+        max-width: 100%;
+        overflow-x: hidden; /* Evitamos el scroll horizontal general al usar wrap */
+    }
+    .code-text { 
+        font-size: 12px; /* Fuente ligeramente más pequeña en móvil */
+        min-width: 0; /* Permite que el contenido se contraiga en flexbox */
+        flex: 1;
+    }
+    .line-numbers {
+        display: none; /* Ocultar números de línea en móviles para ganar espacio */
+    }
+    .code-block {
+        padding: 10px; /* Padding más compacto */
+        margin-bottom: 10px;
+        overflow-x: hidden;
+    }
+
+    /* Aplicamos el "text-break" (wrap) al código en móviles */
+    .code-block code,
+    .markdown-body pre code {
+        white-space: pre-wrap !important;
+        word-break: break-word;
+        width: 100% !important;
+    }
 }
 
 /* Sidebar */
@@ -129,23 +183,20 @@ body {
     padding: 20px;
     font-size: 15px;
     line-height: 1.6;
-    overflow-y: auto;
+    overflow-y: auto; 
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     flex-grow: 1;
 }
 
 .line-numbers {
     color: #484f58;
     text-align: right;
-    padding-right: 20px;
+    padding-right: 15px;
     user-select: none;
 }
 
-/* Colores Neón */
-.neon-text-green {
-    color: var(--neon-green);
-    text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
-    margin-bottom: 20px;
-}
+
 
 .keyword { color: var(--keyword); }
 .string { color: var(--string); }
@@ -168,6 +219,27 @@ body {
     background: var(--neon-green);
     color: black;
     box-shadow: 0 0 20px var(--neon-green);
+}
+
+.btn-whatsapp {
+    background: transparent;
+    border: 1px solid #25d366;
+    color: #25d366;
+    padding: 8px 15px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 0 5px #25d366;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+.btn-whatsapp:hover {
+    background: #25d366;
+    color: black;
+    box-shadow: 0 0 20px #25d366;
 }
 
 .btn-demo-request {
@@ -445,15 +517,21 @@ body {
     border: 1px solid #21262d;
     border-radius: 4px;
     padding: 15px;
-    overflow-x: auto;
     margin-bottom: 15px;
+    max-width: 100%;
+    overflow-x: auto; /* Scroll horizontal interno */
+    -webkit-overflow-scrolling: touch; /* Scroll suave en móviles */
 }
 
 .code-block pre {
     margin: 0;
+    display: block;
 }
 
 .code-block code {
+    display: block;
+    width: max-content; /* Importante para que el fondo cubra todo el ancho al scrollear */
+    min-width: 100%;
     font-family: 'Fira Code', monospace;
     font-size: 14px;
     color: var(--text-main);
@@ -636,8 +714,8 @@ body {
 
 .btn-comercial:hover {
     background: var(--neon-blue);
-    color: #fff;
-    box-shadow: 0 0 20px rgba(0, 122, 204, 0.4);
+    color: #000;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
 }
 
 .btn-tecnico {
@@ -650,4 +728,11 @@ body {
     background: var(--neon-green);
     color: #000;
     box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+}
+/* Colores Neón */
+.neon-text-green {
+    color: var(--neon-green);
+    text-transform: none;
+    text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+    margin-bottom: 20px;
 }

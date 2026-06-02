@@ -1,0 +1,44 @@
+/* Sidebar Button Container */
+.sidebar-btn-container {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.sidebar-btn-container .btn-source {
+    margin-bottom: 20px;
+}
+
+/* Icons */
+.env-icon {
+    color: #8b949e;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+/* Sidebar Section Headers */
+.sidebar-section-header {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-size: 11px;
+    color: var(--comment);
+    text-transform: uppercase;
+    pointer-events: none;
+    padding-left: 20px;
+}
+
+/* GitHub Loading */
+#github-loading {
+    pointer-events: none;
+}
+
+.loading-text {
+    color: var(--neon-green);
+    font-family: 'Fira Code', monospace;
+    padding-left: 24px;
+}
+
+/* Typography Helpers */
+.opacity-50 {
+    opacity: 0.5;
+}

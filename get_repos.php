@@ -1,18 +1,44 @@
 <?php
+// Activar errores para depurar el error 500
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json");
 
 // Leer archivo .env de forma segura
 $envFile = __DIR__ . '/.env';
-if (file_exists($envFile)) {
+$githubToken = '';
+
+if (is_readable($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
-        if (strpos(trim($line), '#') === 0) continue;
-        list($name, $value) = explode('=', $line, 2);
-        putenv(trim($name) . '=' . trim($value));
+        $line = trim($line);
+        if (empty($line) || strpos($line, '#') === 0) continue;
+        $parts = explode('=', $line, 2); // Divide la línea en nombre y valor
+        if (count($parts) === 2) { // Asegura que hay un nombre y un valor
+            $name = trim($parts[0]);
+            $value = trim($parts[1], " \t\n\r\0\x0B\"'"); 
+            if ($name === 'GITHUB_TOKEN') {
+                $githubToken = $value;
+            }
+        }
     }
 }
 
-$githubToken = getenv('GITHUB_TOKEN') ?: '';
+if (!$githubToken) {
+    $githubToken = getenv('GITHUB_TOKEN');
+}
+
+if (!$githubToken) {
+    echo json_encode([
+        "error" => "No se pudo cargar el GITHUB_TOKEN.",
+        "debug" => ["archivo_existe" => file_exists($envFile)]
+    ]);
+    exit;
+}
+
 $githubUser = 'hemmerlingd';
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'repos';
@@ -23,14 +49,13 @@ curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_USERAGENT, 'Daevid-Portfolio-App');
 
 $headers = [
-    "Authorization: token $githubToken",
+    "Authorization: Bearer $githubToken",
     "X-GitHub-Api-Version: 2022-11-28"
 ];
 
 if ($action === 'readme' && !empty($repoName)) {
     $url = "https://api.github.com/repos/$githubUser/$repoName/readme";
     $headers[] = "Accept: application/vnd.github.v3.raw";
-    header("Content-Type: text/plain");
     
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -38,6 +63,7 @@ if ($action === 'readme' && !empty($repoName)) {
     $response = curl_exec($ch);
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     
+    header("Content-Type: text/plain");
     http_response_code($httpcode);
     echo $response;
     curl_close($ch);
@@ -47,7 +73,6 @@ if ($action === 'readme' && !empty($repoName)) {
 // Obtener repositorios
 $url = "https://api.github.com/user/repos?affiliation=owner&sort=updated&per_page=100";
 $headers[] = "Accept: application/vnd.github+json";
-header("Content-Type: application/json");
 
 curl_setopt($ch, CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -61,53 +86,47 @@ if (curl_errno($ch)) {
 }
 
 $repos = json_decode($response, true);
-curl_close($ch);
 
-if (!is_array($repos) || isset($repos['message'])) {
+if (!is_array($repos)) {
     http_response_code(500);
-    $errMsg = isset($repos['message']) ? $repos['message'] : "Invalid response from GitHub API";
-    echo json_encode(["error" => $errMsg]);
+    echo json_encode(["error" => "Invalid response from GitHub API"]);
+    curl_close($ch);
     exit;
 }
 
-// Filtrar repos: solo los que tienen README usando curl_multi (peticiones HEAD en paralelo)
-$mh = curl_multi_init();
-$curl_handles = [];
-
-foreach ($repos as $index => $repo) {
-    $rName = $repo['name'];
-    $rUrl = "https://api.github.com/repos/$githubUser/$rName/readme";
-    
-    $ch_multi = curl_init();
-    curl_setopt($ch_multi, CURLOPT_URL, $rUrl);
-    curl_setopt($ch_multi, CURLOPT_RETURNTRANSFER, true);
-    // Cambiado de HEAD a GET porque algunas peticiones fallaban silenciosamente
-    curl_setopt($ch_multi, CURLOPT_USERAGENT, 'Daevid-Portfolio-App');
-    curl_setopt($ch_multi, CURLOPT_HTTPHEADER, $headers);
-    
-    curl_multi_add_handle($mh, $ch_multi);
-    $curl_handles[$index] = $ch_multi;
+// Check if the response is a GitHub API error object (e.g., {"message": "Bad credentials"})
+if (is_array($repos) && isset($repos['message']) && is_string($repos['message'])) {
+    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    http_response_code($httpcode >= 400 ? $httpcode : 500);
+    echo json_encode(["error" => "GitHub API Error: " . $repos['message']]);
+    curl_close($ch);
+    exit;
 }
 
-$active = null;
-do {
-    $mrc = curl_multi_exec($mh, $active);
-    if ($active) {
-        // Wait a short time for more activity
-        curl_multi_select($mh);
-    }
-} while ($active && $mrc == CURLM_OK);
+curl_close($ch);
 
+// Filtrar repos: solo los que tienen README
+// Procesamiento secuencial (compatible con hostings restringidos como InfinityFree que bloquean curl_multi)
 $filtered_repos = [];
-foreach ($curl_handles as $index => $ch_multi) {
-    $httpcode = curl_getinfo($ch_multi, CURLINFO_HTTP_CODE);
-    // 200 OK significa que el README existe
-    if ($httpcode == 200) {
-        $filtered_repos[] = $repos[$index];
+
+foreach ($repos as $repo) {
+    // Asegurarse de que el objeto repo sea válido y tenga un nombre
+    if (!is_array($repo) || !isset($repo['name'])) {
+        continue; 
     }
-    curl_multi_remove_handle($mh, $ch_multi);
-    curl_close($ch_multi);
+    $rName = $repo['name'];
+    $ch_sync = curl_init("https://api.github.com/repos/$githubUser/$rName/readme");
+    curl_setopt($ch_sync, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch_sync, CURLOPT_NOBODY, true); // Solo verificar existencia (HEAD)
+    curl_setopt($ch_sync, CURLOPT_USERAGENT, 'Daevid-Portfolio-App');
+    curl_setopt($ch_sync, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch_sync, CURLOPT_TIMEOUT, 5); // Timeout corto para no colgar el script
+    
+    curl_exec($ch_sync);
+    if (curl_getinfo($ch_sync, CURLINFO_HTTP_CODE) == 200) {
+        $filtered_repos[] = $repo;
+    }
+    curl_close($ch_sync);
 }
-curl_multi_close($mh);
 
 echo json_encode($filtered_repos);
