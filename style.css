@@ -108,6 +108,75 @@ body {
         word-break: break-word;
         width: 100% !important;
     }
+
+    /* Landing page */
+    .glitch-title {
+        font-size: 2rem;
+    }
+    .landing-subtitle {
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+    .btn-landing {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+
+    /* Button adjustments */
+    .btn-run {
+        margin-left: 20px;
+    }
+    .btn-demo-request,
+    .btn-source,
+    .btn-more-info {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .terminal-window {
+        width: 95%;
+    }
+    .gallery-thumbnails {
+        height: 80px;
+    }
+    .gallery-thumbnails img {
+        height: 50px;
+        max-width: 80px;
+    }
+    .markdown-body {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .glitch-title {
+        font-size: 1.5rem;
+    }
+    .landing-subtitle {
+        font-size: 0.85rem;
+    }
+    .landing-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+    .btn-landing {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+    }
+    .code-content {
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+    .line-numbers {
+        display: none;
+    }
+    .btn-run {
+        margin-left: 10px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
 }
 
 /* Sidebar */
@@ -282,6 +351,27 @@ body {
     background: var(--neon-blue);
     color: black;
     box-shadow: 0 0 20px var(--neon-blue);
+}
+
+.btn-more-info {
+    background: transparent;
+    border: 1px solid #58a6ff;
+    color: #58a6ff;
+    padding: 8px 15px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(88, 166, 255, 0.3);
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+.btn-more-info:hover {
+    background: #58a6ff;
+    color: black;
+    box-shadow: 0 0 20px rgba(88, 166, 255, 0.5);
 }
 
 /* Modal Terminal */

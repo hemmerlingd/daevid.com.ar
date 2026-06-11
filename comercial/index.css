@@ -180,6 +180,28 @@ li::before {
     box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
     transform: translateY(-2px);
 }
+
+.btn-more-info {
+    display: inline-block;
+    background: transparent;
+    border: 1px solid #58a6ff;
+    color: #58a6ff;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-family: 'Fira Code', monospace;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.btn-more-info:hover {
+    background: #58a6ff;
+    color: #000;
+    box-shadow: 0 0 20px rgba(88, 166, 255, 0.5);
+    transform: translateY(-2px);
+}
 .btn-proyects {
     float: right;
 }
@@ -359,6 +381,10 @@ span.small {
     header {
         flex-direction: column;
         gap: 20px;
+    }
+    nav {
+        flex-wrap: wrap;
+        justify-content: center;
     }
     h1 {
         font-size: 2.2rem;

@@ -1,10 +1,17 @@
-<!-- [LANG:HTML, CSS, JavaScript, PHP] -->
+<!-- [LANG:HTML, CSS, JavaScript] -->
 <!-- [DEMO_READY URL="https://daevid.com.ar"] -->
 
 <!-- EN -->
 # Daevid - Developer Portfolio
 
 A dynamic, terminal-styled developer portfolio inspired by VS Code. It features dual profiles (Technical and Commercial), automatically fetches and displays GitHub repositories, supports custom manual projects, parses their READMEs, and groups them by technology, all while maintaining a sleek, hacker-aesthetic UI.
+
+## Tech Stack
+
+- **Frontend:** HTML, CSS, JavaScript (vanilla)
+- **Backend:** PHP (GitHub API proxy)
+- **APIs:** GitHub REST API
+- **Libraries:** marked.js, Devicon, Google Fonts
 
 ## Key Features
 
@@ -20,15 +27,28 @@ A dynamic, terminal-styled developer portfolio inspired by VS Code. It features 
 
 This portfolio parses specific HTML comments in your repository's README to control how the project is displayed:
 
-*   <code>&lt;!-- [HIDDEN] --&gt;</code>: Hides the repository from the portfolio.
-*   <code>&lt;!-- [LANG:Angular, Node.js] --&gt;</code>: Overrides the GitHub detected language, allowing multiple custom categories separated by commas.
-*   <code>&lt;!-- [DEMO_READY URL="https://..."] --&gt;</code>: Adds a "RUN DEMO" button. If URL is omitted, it routes internally.
-*   <code>&lt;!-- EN --&gt;</code> / <code>&lt;!-- ES --&gt;</code>: Creates interactive language tabs to switch the README text dynamically without reloading.
+- `<!-- [HIDDEN] -->`: Hides the repository from the portfolio.
+- `<!-- [LANG:Angular, Node.js] -->`: Overrides the GitHub detected language, allowing multiple custom categories separated by commas.
+- `<!-- [DEMO_READY URL="https://..."] -->`: Adds a "RUN DEMO" button. If URL is omitted, it routes internally.
+- `<!-- EN --> / <!-- ES -->`: Creates interactive language tabs to switch the README text dynamically without reloading.
+
+## Contact
+
+[WhatsApp](https://wa.me/543512019942?text=Hola,%20vengo%20de%20tu%20web%20y%20necesito%20asesoramiento.)
+
+---
 
 <!-- ES -->
 # Daevid - Developer Portfolio
 
 Un portfolio de desarrollador dinámico con estilo de terminal, inspirado en VS Code. Cuenta con perfiles duales (Técnico y Comercial), obtiene y muestra automáticamente repositorios de GitHub, soporta proyectos manuales personalizados, procesa sus READMEs y los agrupa por tecnología, manteniendo una interfaz elegante con estética hacker.
+
+## Stack Tecnológico
+
+- **Frontend:** HTML, CSS, JavaScript (vanilla)
+- **Backend:** PHP (proxy API GitHub)
+- **APIs:** GitHub REST API
+- **Librerías:** marked.js, Devicon, Google Fonts
 
 ## Características Principales
 
@@ -44,7 +64,11 @@ Un portfolio de desarrollador dinámico con estilo de terminal, inspirado en VS 
 
 Este portfolio lee comentarios HTML específicos en el README de tu repositorio para controlar cómo se muestra el proyecto:
 
-*   <code>&lt;!-- [HIDDEN] --&gt;</code>: Oculta el repositorio del portfolio.
-*   <code>&lt;!-- [LANG:Angular, Node.js] --&gt;</code>: Sobreescribe el lenguaje detectado por GitHub, permitiendo múltiples categorías separadas por comas.
-*   <code>&lt;!-- [DEMO_READY URL="https://..."] --&gt;</code>: Agrega un botón "RUN DEMO". Si se omite la URL, rutea internamente.
-*   <code>&lt;!-- EN --&gt;</code> / <code>&lt;!-- ES --&gt;</code>: Crea pestañas interactivas de idiomas para cambiar el texto del README dinámicamente sin recargar la página.
+- `<!-- [HIDDEN] -->`: Oculta el repositorio del portfolio.
+- `<!-- [LANG:Angular, Node.js] -->`: Sobreescribe el lenguaje detectado por GitHub, permitiendo múltiples categorías separadas por comas.
+- `<!-- [DEMO_READY URL="https://..."] -->`: Agrega un botón "RUN DEMO". Si se omite la URL, rutea internamente.
+- `<!-- EN --> / <!-- ES -->`: Crea pestañas interactivas de idiomas para cambiar el texto del README dinámicamente sin recargar la página.
+
+## Contacto
+
+[WhatsApp](https://wa.me/543512019942?text=Hola,%20vengo%20de%20tu%20web%20y%20necesito%20asesoramiento.)
