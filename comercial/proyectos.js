@@ -2,6 +2,14 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchProjects();
 });
 
+function slugify(text) {
+    return text.toString().toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
 function getDeviconForLanguage(language) {
     if (!language) return '<i class="devicon-git-plain" style="color: #8b949e; margin-right: 8px; font-size: 14px;"></i>';
     const primaryLang = language.split(',')[0].trim().toLowerCase();
@@ -83,8 +91,9 @@ async function fetchProjects() {
                         repo.language = langMatch[1].trim();
                     }
                     const demoMatch = readmeText.match(/<!--\s*\[DEMO_READY(?:\s+URL=["'](.*?)["'])?\]\s*-->/i);
-                    if (demoMatch && demoMatch[1]) {
-                        repo.demo_url = demoMatch[1];
+                    if (demoMatch) {
+                        repo._isDemoReady = true;
+                        repo.demo_url = demoMatch[1] || `/${slugify(repo.name)}`;
                     }
 
                     const extractedDesc = extractDescription(readmeText);
@@ -95,161 +104,219 @@ async function fetchProjects() {
             } catch (e) {}
         }));
 
-        // Limpiar estado de carga
-        container.innerHTML = ''; 
+        container.innerHTML = '';
 
-        // Filtrar vacíos y ocultos
-        const visibleProjects = allProjects.filter(repo => repo && repo.name && !repo.hidden);
+        renderLanguageFilter(allProjects);
 
-        // Ordenar: 1. Con Demo, 2. Proyectos Personalizados (Custom), 3. El resto
-        visibleProjects.sort((a, b) => {
-            // Prioridad 1: Demos
-            if (a.demo_url && !b.demo_url) return -1;
-            if (!a.demo_url && b.demo_url) return 1;
-            // Prioridad 2: Proyectos Custom
-            if (a.is_custom && !b.is_custom) return -1;
-            if (!a.is_custom && b.is_custom) return 1;
-            // Alfabético para el resto
-            return a.name.localeCompare(b.name);
-        });
-
-        if (visibleProjects.length === 0) {
-            container.innerHTML = '<div class="container" style="text-align: center; width: 100%; grid-column: 1 / -1;"><p>No se encontraron proyectos disponibles por el momento.</p></div>';
-            return;
-        }
-
-        visibleProjects.forEach(repo => {
-            const card = document.createElement('div');
-            card.className = 'container';
-            card.style.display = 'flex';
-            card.style.flexDirection = 'column';
-            card.style.justifyContent = 'space-between';
-            card.style.width = '100%'; 
-            card.style.cursor = 'pointer';
-
-            card.addEventListener('click', () => {
-                openReadmeModal(repo);
-            });
-
-            const contentDiv = document.createElement('div');
-
-            const titleContainer = document.createElement('div');
-            titleContainer.style.display = 'flex';
-            titleContainer.style.justifyContent = 'space-between';
-            titleContainer.style.alignItems = 'flex-start';
-
-            const title = document.createElement('h2');
-            title.className = 'highlight';
-            title.style.fontSize = '1.5rem';
-            title.style.margin = '0';
-            title.style.border = 'none';
-            title.textContent = repo.name;
-
-            titleContainer.appendChild(title);
-
-            // Badge de GitHub
-            if (!repo.is_custom) {
-                const ghBadge = document.createElement('span');
-                ghBadge.style.background = 'rgba(255, 255, 255, 0.1)';
-                ghBadge.style.border = '1px solid rgba(255,255,255,0.2)';
-                ghBadge.style.padding = '4px 8px';
-                ghBadge.style.borderRadius = '6px';
-                ghBadge.style.fontSize = '0.75rem';
-                ghBadge.style.color = '#fff';
-                ghBadge.style.display = 'flex';
-                ghBadge.style.alignItems = 'center';
-                ghBadge.style.gap = '5px';
-                ghBadge.innerHTML = '<i class="devicon-github-original"></i> GitHub';
-                titleContainer.appendChild(ghBadge);
-            }
-
-            const description = document.createElement('p');
-            description.style.fontSize = '1rem';
-            description.style.marginTop = '15px';
-            description.textContent = repo.description || 'Este proyecto no cuenta con descripción breve.';
-
-            // Lista de lenguajes como Badges
-            const tagsUl = document.createElement('div');
-            tagsUl.style.display = 'flex';
-            tagsUl.style.flexWrap = 'wrap';
-            tagsUl.style.gap = '10px';
-            tagsUl.style.marginBottom = '5px';
-
-            if (repo.language) {
-                const langs = repo.language.split(',');
-                langs.forEach(lang => {
-                    const l = lang.trim();
-                    if (!l) return;
-                    
-                    const langBadge = document.createElement('span');
-                    langBadge.style.background = 'rgba(0, 255, 65, 0.05)';
-                    langBadge.style.border = '1px solid rgba(0, 255, 65, 0.3)';
-                    langBadge.style.color = 'var(--neon-green)';
-                    langBadge.style.padding = '5px 12px';
-                    langBadge.style.borderRadius = '20px';
-                    langBadge.style.fontSize = '0.85rem';
-                    langBadge.style.display = 'inline-flex';
-                    langBadge.style.alignItems = 'center';
-                    
-                    langBadge.innerHTML = `${getDeviconForLanguage(l)} ${l}`;
-                    tagsUl.appendChild(langBadge);
-                });
-            }
-
-            contentDiv.appendChild(tagsUl);
-            contentDiv.appendChild(titleContainer);
-            contentDiv.appendChild(description);
-
-            card.appendChild(contentDiv);
-
-            const btnContainer = document.createElement('div');
-            btnContainer.style.marginTop = '30px';
-            btnContainer.style.display = 'flex';
-            btnContainer.style.gap = '10px';
-            
-            btnContainer.addEventListener('click', (e) => {
-                e.stopPropagation();
-            });
-
-            if (repo.html_url && !repo.is_custom && !repo.private) {
-                const link = document.createElement('a');
-                link.href = repo.html_url;
-                link.target = '_blank';
-                link.className = 'btn-back';
-                link.style.padding = '8px 15px';
-                link.style.fontSize = '0.8rem';
-                link.textContent = 'Ver Código';
-                btnContainer.appendChild(link);
-            } else {
-                const link = document.createElement('a');
-                link.href = `https://wa.me/543512019942?text=Hola,%20quisiera%20m%C3%A1s%20informaci%C3%B3n%20sobre%20el%20proyecto%20${encodeURIComponent(repo.name)}`;
-                link.target = '_blank';
-                link.className = 'btn-more-info';
-                link.style.padding = '8px 15px';
-                link.style.fontSize = '0.8rem';
-                link.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 5px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg> Solicitar más info';
-                btnContainer.appendChild(link);
-            }
-
-            if (repo.demo_url) {
-                const linkDemo = document.createElement('a');
-                linkDemo.href = repo.demo_url;
-                linkDemo.target = '_blank';
-                linkDemo.className = 'btn-back';
-                linkDemo.style.padding = '8px 15px';
-                linkDemo.style.fontSize = '0.8rem';
-                linkDemo.textContent = 'Ver Demo';
-                btnContainer.appendChild(linkDemo);
-            }
-
-            card.appendChild(btnContainer);
-            container.appendChild(card);
-        });
+        applyFilter();
 
     } catch (error) {
         console.error('Error general:', error);
         container.innerHTML = '<div class="container" style="text-align: center; width: 100%; grid-column: 1 / -1;"><p style="color: #ff5f56;">Ocurrió un error al cargar los proyectos.</p></div>';
     }
+}
+
+let _allProjects = [];
+
+function applyFilter(language) {
+    const container = document.getElementById('projects-container');
+    container.innerHTML = '';
+
+    let filtered = _allProjects.filter(repo => repo && repo.name && !repo.hidden);
+
+    if (language) {
+        filtered = filtered.filter(repo => {
+            if (!repo.language) return false;
+            const langs = repo.language.split(',').map(l => l.trim().toLowerCase());
+            return langs.includes(language.toLowerCase());
+        });
+    }
+
+    filtered.sort((a, b) => {
+        if (a._isDemoReady && !b._isDemoReady) return -1;
+        if (!a._isDemoReady && b._isDemoReady) return 1;
+        const descA = (a.description || '').length;
+        const descB = (b.description || '').length;
+        if (descA > descB) return -1;
+        if (descA < descB) return 1;
+        return a.name.localeCompare(b.name);
+    });
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="container" style="text-align: center; width: 100%; grid-column: 1 / -1;"><p>No se encontraron proyectos disponibles por el momento.</p></div>';
+        return;
+    }
+
+    renderProjects(filtered);
+}
+
+function renderProjects(projects) {
+    const container = document.getElementById('projects-container');
+
+    projects.forEach(repo => {
+        const card = document.createElement('div');
+        card.className = 'container';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.justifyContent = 'space-between';
+        card.style.width = '100%';
+        card.style.cursor = 'pointer';
+
+        card.addEventListener('click', () => {
+            openReadmeModal(repo);
+        });
+
+        const contentDiv = document.createElement('div');
+
+        const titleContainer = document.createElement('div');
+        titleContainer.style.display = 'flex';
+        titleContainer.style.justifyContent = 'space-between';
+        titleContainer.style.alignItems = 'flex-start';
+
+        const title = document.createElement('h2');
+        title.className = 'highlight';
+        title.style.fontSize = '1.5rem';
+        title.style.margin = '0';
+        title.style.border = 'none';
+        title.textContent = repo.name;
+
+        titleContainer.appendChild(title);
+
+        if (!repo.is_custom) {
+            const ghBadge = document.createElement('span');
+            ghBadge.style.background = 'rgba(255, 255, 255, 0.1)';
+            ghBadge.style.border = '1px solid rgba(255,255,255,0.2)';
+            ghBadge.style.padding = '4px 8px';
+            ghBadge.style.borderRadius = '6px';
+            ghBadge.style.fontSize = '0.75rem';
+            ghBadge.style.color = '#fff';
+            ghBadge.style.display = 'flex';
+            ghBadge.style.alignItems = 'center';
+            ghBadge.style.gap = '5px';
+            ghBadge.innerHTML = '<i class="devicon-github-original"></i> GitHub';
+            titleContainer.appendChild(ghBadge);
+        }
+
+        const description = document.createElement('p');
+        description.style.fontSize = '1rem';
+        description.style.marginTop = '15px';
+        description.textContent = repo.description || 'Este proyecto no cuenta con descripción breve.';
+
+        const tagsUl = document.createElement('div');
+        tagsUl.style.display = 'flex';
+        tagsUl.style.flexWrap = 'wrap';
+        tagsUl.style.gap = '10px';
+        tagsUl.style.marginBottom = '5px';
+
+        if (repo.language) {
+            const langs = repo.language.split(',');
+            langs.forEach(lang => {
+                const l = lang.trim();
+                if (!l) return;
+
+                const langBadge = document.createElement('span');
+                langBadge.style.background = 'rgba(0, 255, 65, 0.05)';
+                langBadge.style.border = '1px solid rgba(0, 255, 65, 0.3)';
+                langBadge.style.color = 'var(--neon-green)';
+                langBadge.style.padding = '5px 12px';
+                langBadge.style.borderRadius = '20px';
+                langBadge.style.fontSize = '0.85rem';
+                langBadge.style.display = 'inline-flex';
+                langBadge.style.alignItems = 'center';
+
+                langBadge.innerHTML = `${getDeviconForLanguage(l)} ${l}`;
+                tagsUl.appendChild(langBadge);
+            });
+        }
+
+        contentDiv.appendChild(tagsUl);
+        contentDiv.appendChild(titleContainer);
+        contentDiv.appendChild(description);
+
+        card.appendChild(contentDiv);
+
+        const btnContainer = document.createElement('div');
+        btnContainer.style.marginTop = '30px';
+        btnContainer.style.display = 'flex';
+        btnContainer.style.gap = '10px';
+
+        btnContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        if (repo.html_url && !repo.is_custom && !repo.private) {
+            const link = document.createElement('a');
+            link.href = repo.html_url;
+            link.target = '_blank';
+            link.className = 'btn-back';
+            link.style.padding = '8px 15px';
+            link.style.fontSize = '0.8rem';
+            link.textContent = 'Ver Código';
+            btnContainer.appendChild(link);
+        } else {
+            const link = document.createElement('a');
+            link.href = `https://wa.me/543512019942?text=Hola,%20quisiera%20m%C3%A1s%20informaci%C3%B3n%20sobre%20el%20proyecto%20${encodeURIComponent(repo.name)}`;
+            link.target = '_blank';
+            link.className = 'btn-more-info';
+            link.style.padding = '8px 15px';
+            link.style.fontSize = '0.8rem';
+            link.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 5px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg> Solicitar más info';
+            btnContainer.appendChild(link);
+        }
+
+        if (repo.demo_url) {
+            const linkDemo = document.createElement('a');
+            linkDemo.href = repo.demo_url;
+            linkDemo.target = '_blank';
+            linkDemo.className = 'btn-back';
+            linkDemo.style.padding = '8px 15px';
+            linkDemo.style.fontSize = '0.8rem';
+            linkDemo.textContent = 'Ver Demo';
+            btnContainer.appendChild(linkDemo);
+        }
+
+        card.appendChild(btnContainer);
+        container.appendChild(card);
+    });
+}
+
+function getUniqueLanguages(projects) {
+    const langSet = new Set();
+    projects.forEach(repo => {
+        if (repo.language) {
+            repo.language.split(',').forEach(l => {
+                const t = l.trim();
+                if (t) langSet.add(t);
+            });
+        }
+    });
+    return Array.from(langSet).sort();
+}
+
+function renderLanguageFilter(projects) {
+    _allProjects = projects;
+
+    const filterContainer = document.getElementById('language-filter');
+    if (!filterContainer) return;
+
+    const langs = getUniqueLanguages(projects);
+
+    let html = '<div class="filter-chips">';
+    html += `<button class="filter-chip active" data-lang="">Todos</button>`;
+    langs.forEach(lang => {
+        html += `<button class="filter-chip" data-lang="${lang}">${lang}</button>`;
+    });
+    html += '</div>';
+
+    filterContainer.innerHTML = html;
+
+    filterContainer.querySelectorAll('.filter-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterContainer.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyFilter(btn.getAttribute('data-lang'));
+        });
+    });
 }
 
 function extractDescription(markdown) {
